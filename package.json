@@ -1,0 +1,24 @@
+{
+  "name": "icrc-supply-chain-tracking",
+  "version": "1.0.0",
+  "description": "Humanitarian supply chain tracking system for the ICRC",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "blockchain",
+    "supply-chain",
+    "humanitarian",
+    "icrc",
+    "tracking"
+  ],
+  "author": "Senior Blockchain Engineer",
+  "license": "MIT",
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "elliptic": "^6.5.9",
+    "dotenv": "^16.4.5"
+  }
+}

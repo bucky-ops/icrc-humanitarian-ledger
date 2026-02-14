@@ -1,0 +1,16 @@
+# Dependency folders
+node_modules/
+
+# Security: Never commit private keys!
+identity/**/*.pem
+identity/**/*.key
+identity/icrc-hq/
+identity/suppliers/
+
+# Local Environment & Logs
+.env
+logs/*.log
+
+# Operating system files
+.DS_Store
+Thumbs.db
