@@ -99,7 +99,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 p-6">
+    <main x-data="dashboardApp()" class="flex-1 p-6">
         <!-- Header -->
         <header class="mb-8">
             <div class="flex justify-between items-center">
@@ -235,10 +235,11 @@
         // Initialize Lucide icons
         lucide.createIcons();
         
-        function dashboard() {
+        // This is the logic container
+        function dashboardApp() {
             return {
                 ledger: [],
-                stats: { total: 0, status: 'Checking...', auditStatus: 'Secure' },
+                stats: { total: 0, status: 'Checking...' },
                 isVerifying: false,
                 searchTerm: '',
 
@@ -251,48 +252,40 @@
                 },
 
                 async fetchLedger() {
+                    console.log("🛠️ Attempting to fetch ledger...");
                     try {
-                        console.log("Fetching ledger data...");
-                        const res = await fetch('/ledger');
-                        const data = await res.json();
+                        const response = await fetch('/ledger');
+                        const data = await response.json();
                         
-                        // FIX: This ensures we get the array even if the server wraps it in an object
-                        this.ledger = Array.isArray(data.blocks) ? data.blocks : (data.chain || data.ledger || []);
+                        // Handle different data shapes
+                        this.ledger = Array.isArray(data.blocks) ? data.blocks : (data.chain || []);
                         this.stats.total = this.ledger.length;
-                        console.log("Ledger updated:", this.ledger);
+                        
+                        console.log("✅ Ledger Data Loaded:", this.ledger);
                     } catch (err) {
-                        console.error("Failed to fetch ledger:", err);
+                        console.error("❌ Ledger Fetch Error:", err);
                     }
                 },
 
                 async auditLedger() {
-                    this.isVerifying = true; // Turn on 'Verifying...' state
+                    console.log("🔍 Audit Button Clicked");
+                    this.isVerifying = true;
                     try {
-                        console.log("Starting audit...");
-                        const res = await fetch('/audit');
-                        const result = await res.json();
-                        
-                        // Show result
-                        if (result.status === 'Secure') {
-                            alert("✅ Audit Complete: Ledger is 100% Secure.");
-                            this.stats.auditStatus = 'Secure';
-                        } else {
-                            alert("🚨 TAMPER ALERT: Data inconsistency detected!");
-                            this.stats.auditStatus = 'Tampered';
-                        }
+                        const response = await fetch('/audit');
+                        const result = await response.json();
+                        alert("Audit Result: " + result.status);
                     } catch (err) {
-                        console.error("Audit request failed:", err);
-                        alert("❌ Network Error: Could not reach Audit Engine.");
+                        alert("Audit Failed: Check Server");
                     } finally {
-                        // THIS FIXES THE STUCK BUTTON
-                        this.isVerifying = false; 
+                        this.isVerifying = false; // This UNSTUCKS the button
                     }
                 },
 
                 init() {
+                    console.log("🚀 Alpine initialized and running!");
                     this.fetchLedger();
-                    // Refresh every 5 seconds
-                    setInterval(() => this.fetchLedger(), 5000);
+                    // Check for new data every 10 seconds
+                    setInterval(() => this.fetchLedger(), 10000);
                 }
             }
         }
