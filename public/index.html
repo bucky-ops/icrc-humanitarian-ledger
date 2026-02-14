@@ -194,35 +194,34 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kit ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Origin</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temperature</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temperature</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <template x-for="item in filteredLedger" :key="item.index">
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-deep-navy" x-text="item.data.kitID"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="item.data.type"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="item.data.origin"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="`${item.data.temperature}°C`"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="item.data.location"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="new Date(item.timestamp).toLocaleString()"></td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span 
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white"
-                                        :class="item.data.temperature >= 2 && item.data.temperature <= 8 ? 'status-safe' : item.data.temperature > 8 ? 'status-danger' : 'status-warning'"
-                                        x-text="item.data.temperature >= 2 && item.data.temperature <= 8 ? 'Safe' : item.data.temperature > 8 ? 'Danger' : 'Warning'"
-                                    ></span>
+                        <template x-for="block in filteredLedger" :key="block.hash">
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-2 font-mono text-sm" x-text="block.data.kitID || 'N/A'"></td>
+                                <td class="px-4 py-2" x-text="block.data.type || 'N/A'"></td>
+                                <td class="px-4 py-2" x-text="block.data.location || 'N/A'"></td>
+                                <td class="px-4 py-2">
+                                    <span :class="block.data.temperature > 8 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'" 
+                                          class="px-2 py-1 rounded-full text-xs font-bold"
+                                          x-text="block.data.temperature + '°C'">
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 text-xs text-gray-500" x-text="new Date(block.timestamp).toLocaleString()"></td>
+                                <td class="px-4 py-2">
+                                    <span class="text-green-600">● Verified</span>
                                 </td>
                             </tr>
                         </template>
                         
                         <!-- Empty state -->
                         <tr x-show="filteredLedger.length === 0">
-                            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
                                 <span x-text="searchTerm ? 'No kits match your search.' : 'Loading ledger data...'"></span>
                             </td>
                         </tr>
