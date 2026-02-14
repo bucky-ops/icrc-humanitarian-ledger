@@ -110,17 +110,17 @@
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center">
                         <div class="w-3 h-3 rounded-full bg-green-500 pulse mr-2"></div>
-                        <span class="text-sm font-medium text-deep-navy">System Online</span>
+                        <span class="text-sm font-medium text-deep-navy" x-text="stats.status"></span>
                     </div>
                     <button 
-                        @click="runAudit()"
-                        :disabled="isAuditing"
+                        @click="auditLedger()"
+                        :disabled="isVerifying"
                         class="bg-icrc-red hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center disabled:opacity-50"
                     >
-                        <i data-lucide="shield-alert" class="mr-2" x-show="!isAuditing"></i>
-                        <i data-lucide="loader" class="mr-2 animate-spin" x-show="isAuditing"></i>
-                        <span x-show="!isAuditing">Verify Ledger</span>
-                        <span x-show="isAuditing">Verifying...</span>
+                        <i data-lucide="shield-alert" class="mr-2" x-show="!isVerifying"></i>
+                        <i data-lucide="loader" class="mr-2 animate-spin" x-show="isVerifying"></i>
+                        <span x-show="!isVerifying">Verify Ledger</span>
+                        <span x-show="isVerifying">Verifying...</span>
                     </button>
                 </div>
             </div>
@@ -133,7 +133,7 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Total Kits Tracked</p>
-                        <p class="text-3xl font-bold text-deep-navy mt-1" x-text="totalKits"></p>
+                        <p class="text-3xl font-bold text-deep-navy mt-1" x-text="stats.total"></p>
                     </div>
                     <div class="bg-red-100 p-3 rounded-lg">
                         <i data-lucide="package" class="text-icrc-red"></i>
@@ -146,7 +146,7 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Network Status</p>
-                        <p class="text-3xl font-bold text-deep-navy mt-1" x-text="networkStatus"></p>
+                        <p class="text-3xl font-bold text-deep-navy mt-1" x-text="stats.status"></p>
                     </div>
                     <div class="bg-green-100 p-3 rounded-lg">
                         <i data-lucide="wifi" class="text-green-500"></i>
@@ -159,7 +159,7 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Compliance Rate</p>
-                        <p class="text-3xl font-bold text-deep-navy mt-1" x-text="complianceRate + '%'"></p>
+                        <p class="text-3xl font-bold text-deep-navy mt-1" x-text="(ledger.length > 0 ? Math.round((ledger.filter(item => item.data.temperature >= 2 && item.data.temperature <= 8).length / ledger.length) * 100) : 0) + '%'"></p>
                     </div>
                     <div class="bg-blue-100 p-3 rounded-lg">
                         <i data-lucide="thermometer" class="text-blue-500"></i>
@@ -181,20 +181,6 @@
             </div>
         </div>
 
-        <!-- Audit Status Message -->
-        <div 
-            x-show="auditMessage" 
-            class="mb-6 p-4 rounded-lg"
-            :class="auditMessageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-        >
-            <div class="flex items-center">
-                <i 
-                    :data-lucide="auditMessageType === 'success' ? 'check-circle' : 'alert-triangle'" 
-                    class="mr-2"
-                ></i>
-                <span x-text="auditMessage"></span>
-            </div>
-        </div>
 
         <!-- Traceability Table -->
         <div class="bg-white rounded-xl shadow overflow-hidden">
@@ -252,16 +238,11 @@
         
         function dashboard() {
             return {
-                // State variables
-                networkStatus: 'Checking...',
-                totalKits: 0,
-                complianceRate: 0,
                 ledger: [],
+                stats: { total: 0, status: 'Checking...', auditStatus: 'Secure' },
+                isVerifying: false,
                 searchTerm: '',
-                isAuditing: false,
-                auditMessage: null,
-                auditMessageType: 'success', // 'success' or 'error'
-                
+
                 // Computed property for filtered ledger
                 get filteredLedger() {
                     if (!this.searchTerm) return this.ledger;
@@ -269,86 +250,50 @@
                         item.data.kitID.toLowerCase().includes(this.searchTerm.toLowerCase())
                     );
                 },
-                
-                // Initialize the dashboard
-                async init() {
-                    // Initial data fetch
-                    await this.fetchLedger();
-                    await this.fetchHealth();
-                    this.calculateStats();
-                    
-                    // Set up auto-refresh interval (every 5 seconds)
-                    setInterval(async () => {
-                        await this.fetchLedger();
-                        this.calculateStats();
-                    }, 5000);
-                },
-                
-                // Fetch ledger data from API
+
                 async fetchLedger() {
                     try {
-                        const response = await fetch('/ledger');
-                        const data = await response.json();
-                        this.ledger = data.blocks || [];
-                    } catch (error) {
-                        console.error('Error fetching ledger:', error);
-                    }
-                },
-                
-                // Fetch health status from API
-                async fetchHealth() {
-                    try {
-                        const response = await fetch('/health');
-                        const data = await response.json();
-                        this.networkStatus = data.status;
-                    } catch (error) {
-                        console.error('Error fetching health:', error);
-                        this.networkStatus = 'Offline';
-                    }
-                },
-                
-                // Run audit and display results
-                async runAudit() {
-                    this.isAuditing = true;
-                    this.auditMessage = null;
-                    
-                    try {
-                        const response = await fetch('/audit');
-                        const data = await response.json();
+                        console.log("Fetching ledger data...");
+                        const res = await fetch('/ledger');
+                        const data = await res.json();
                         
-                        if (data.status === 'Secure') {
-                            this.auditMessage = 'Ledger integrity verified: All blocks are secure.';
-                            this.auditMessageType = 'success';
-                        } else if (data.status === 'Tampered') {
-                            this.auditMessage = `Ledger tampering detected at block ${data.atBlock || 'unknown'}!`;
-                            this.auditMessageType = 'error';
-                        } else {
-                            this.auditMessage = `Audit status: ${data.status}`;
-                            this.auditMessageType = 'success';
-                        }
-                    } catch (error) {
-                        console.error('Error running audit:', error);
-                        this.auditMessage = 'Error running audit. Please try again.';
-                        this.auditMessageType = 'error';
-                    } finally {
-                        this.isAuditing = false;
+                        // FIX: This ensures we get the array even if the server wraps it in an object
+                        this.ledger = Array.isArray(data.blocks) ? data.blocks : (data.chain || data.ledger || []);
+                        this.stats.total = this.ledger.length;
+                        console.log("Ledger updated:", this.ledger);
+                    } catch (err) {
+                        console.error("Failed to fetch ledger:", err);
                     }
                 },
-                
-                // Calculate statistics
-                calculateStats() {
-                    // Calculate total kits
-                    this.totalKits = [...new Set(this.ledger.map(item => item.data.kitID))].length;
-                    
-                    // Calculate compliance rate
-                    if (this.ledger.length > 0) {
-                        const compliantKits = this.ledger.filter(item => 
-                            item.data.temperature >= 2 && item.data.temperature <= 8
-                        ).length;
-                        this.complianceRate = Math.round((compliantKits / this.ledger.length) * 100);
-                    } else {
-                        this.complianceRate = 0;
+
+                async auditLedger() {
+                    this.isVerifying = true; // Turn on 'Verifying...' state
+                    try {
+                        console.log("Starting audit...");
+                        const res = await fetch('/audit');
+                        const result = await res.json();
+                        
+                        // Show result
+                        if (result.status === 'Secure') {
+                            alert("✅ Audit Complete: Ledger is 100% Secure.");
+                            this.stats.auditStatus = 'Secure';
+                        } else {
+                            alert("🚨 TAMPER ALERT: Data inconsistency detected!");
+                            this.stats.auditStatus = 'Tampered';
+                        }
+                    } catch (err) {
+                        console.error("Audit request failed:", err);
+                        alert("❌ Network Error: Could not reach Audit Engine.");
+                    } finally {
+                        // THIS FIXES THE STUCK BUTTON
+                        this.isVerifying = false; 
                     }
+                },
+
+                init() {
+                    this.fetchLedger();
+                    // Refresh every 5 seconds
+                    setInterval(() => this.fetchLedger(), 5000);
                 }
             }
         }
