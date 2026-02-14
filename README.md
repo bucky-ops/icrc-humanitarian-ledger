@@ -1,4 +1,4 @@
-# ICRC Humanitarian Blockchain (Phase 1, 2 & 3)
+# ICRC Humanitarian Blockchain (Phase 1, 2, 3 & 4)
 A bare-metal Node.js implementation of a supply chain ledger.
 
 ## Current Progress:
@@ -12,6 +12,9 @@ A bare-metal Node.js implementation of a supply chain ledger.
 - [x] Phase 3: API Gateway with Express.js
 - [x] Phase 3: RESTful Endpoints for Ledger Access
 - [x] Phase 3: Kit Submission and Validation API
+- [x] Phase 4: Humanitarian Traceability Dashboard
+- [x] Phase 4: Real-time Data Visualization
+- [x] Phase 4: Interactive Kit Tracking Interface
 
 ## Security Note:
 Private keys are excluded from version control via .gitignore.

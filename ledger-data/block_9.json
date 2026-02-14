@@ -1,0 +1,15 @@
+{
+  "index": 9,
+  "timestamp": "2026-02-14T08:00:25.309Z",
+  "data": {
+    "kitID": "KIT-204",
+    "type": "Emergency",
+    "origin": "Geneva",
+    "temperature": 5,
+    "location": "Nairobi Airport",
+    "timestamp": "2026-02-14T08:00:25.285Z",
+    "signature": "3044022060d71842cb0a65dc236bbf93032bd671b701bb6110f41511befc9b6e83d40446022064e9456128a5f8ef31ab90d53500acf3550f0ed9fd9e982ff1fab3771626038a"
+  },
+  "previousHash": "3fcd37c692ce7bf4ff392ef0e57eecf92029097e930d5496656a25952fda92ed",
+  "hash": "ac79fd47b7ea5e848a69c988d4f7885510c82d3efd475978762797cf2c17cfd5"
+}

@@ -1,0 +1,15 @@
+{
+  "index": 8,
+  "timestamp": "2026-02-14T07:55:49.526Z",
+  "data": {
+    "kitID": "KIT-202",
+    "type": "Emergency",
+    "origin": "Geneva",
+    "temperature": 5,
+    "location": "Entebbe Airport",
+    "timestamp": "2026-02-14T07:55:49.460Z",
+    "signature": "304402207d5e8535e04c992c0e8d40626e966c9592047bd85a279dc431857480fe59c43c02206c46d92a7533f16bd6cc0b6bcdb05fad146247f42b2a99fdd4a437337cbd1544"
+  },
+  "previousHash": "c4c6a08971a183c1710100a2e3fb551979aef24c06336bb113e80ce32a0fb0ef",
+  "hash": "3fcd37c692ce7bf4ff392ef0e57eecf92029097e930d5496656a25952fda92ed"
+}

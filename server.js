@@ -14,6 +14,9 @@ const PORT = 3000;
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Serve static files from the 'public' folder
+app.use(express.static('public'));
+
 // Initialize the blockchain
 const blockchain = new Blockchain();
 

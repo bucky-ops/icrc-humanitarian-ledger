@@ -14,11 +14,11 @@ async function testNetworkAccess() {
         // 3. Test Adding a Kit
         console.log("📤 Sending new kit data to network...");
         const newKit = {
-            kitID: "KIT-202",
+            kitID: "KIT-204",
             type: "Emergency",
             origin: "Geneva",
             temperature: 5,
-            location: "Entebbe Airport"
+            location: "Nairobi Airport"
         };
         const response = await axios.post('http://localhost:3000/add-kit', newKit);
         console.log("✅ API Response:", response.data.message);
