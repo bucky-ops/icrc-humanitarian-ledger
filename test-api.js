@@ -21,12 +21,18 @@ async function testNetworkAccess() {
 
         // 3. Test Adding a Kit
         console.log("📤 Sending new kit data to network...");
+        
+        // Arrays of possible values for randomization
+        const types = ['Emergency', 'Surgical', 'Medication', 'Vaccine', 'Relief'];
+        const origins = ['Geneva', 'New York', 'Brussels', 'Amsterdam', 'London', 'Paris', 'Berlin'];
+        const locations = ['Nairobi Airport', 'Lagos Distribution Center', 'Kigali Warehouse', 'Cairo Hub', 'Beirut Station', 'Athens Port', 'Rome Terminal'];
+        
         const newKit = {
             kitID: generateRandomKitID(), // Always generate a random kit ID
-            type: "Emergency",
-            origin: "Geneva",
+            type: types[Math.floor(Math.random() * types.length)], // Random type
+            origin: origins[Math.floor(Math.random() * origins.length)], // Random origin
             temperature: Math.floor(2 + Math.random() * 7), // Random temp between 2-8
-            location: "Nairobi Airport"
+            location: locations[Math.floor(Math.random() * locations.length)] // Random location
         };
         const response = await axios.post('http://localhost:3000/add-kit', newKit);
         console.log("✅ API Response:", response.data.message);
