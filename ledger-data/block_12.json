@@ -1,0 +1,15 @@
+{
+  "index": 12,
+  "timestamp": "2026-02-14T08:39:12.806Z",
+  "data": {
+    "kitID": "REL-534",
+    "type": "Surgical",
+    "origin": "Berlin",
+    "temperature": 8,
+    "location": "Nairobi Airport",
+    "timestamp": "2026-02-14T08:39:12.776Z",
+    "signature": "3045022023c3ffe6c089b8ddfde89436bdbfe8dc715cb72b871510c94b87b28a616e6d37022100fa437b69cfeb6521889e8cfe5d42a2bd1bdb153fa3ce2f3e08abe571636c24af"
+  },
+  "previousHash": "a03b021a69addc7e392cf91c6aae5c3aab01e11332fafcde020d7fbf90c322c5",
+  "hash": "3f7c43ef348fb9f2cd727acc6834eda61962108fbb1d8a91a4d5598821ecd384"
+}

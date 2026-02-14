@@ -1,0 +1,15 @@
+{
+  "index": 14,
+  "timestamp": "2026-02-14T08:39:30.734Z",
+  "data": {
+    "kitID": "KIT-143",
+    "type": "Surgical",
+    "origin": "Brussels",
+    "temperature": 6,
+    "location": "Nairobi Airport",
+    "timestamp": "2026-02-14T08:39:30.711Z",
+    "signature": "304502206e7b2f69e7fd950c1e941d9916c335d31c604461bcbd315fadbb0e1b7e77a642022100fe99cbcae9144d10ec8e2dd82132a8dc8549de8605216469a8a5b1d8baa2d7d2"
+  },
+  "previousHash": "b9c4ecb559cca4b53706b419a5125ab15dd837fbb43cb51712248cf0124fa111",
+  "hash": "cd082205ec970dcd98a445c566768b546de91217e94652ce32b04e798f64b6c8"
+}

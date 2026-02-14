@@ -1,0 +1,15 @@
+{
+  "index": 13,
+  "timestamp": "2026-02-14T08:39:22.672Z",
+  "data": {
+    "kitID": "MED-186",
+    "type": "Vaccine",
+    "origin": "Berlin",
+    "temperature": 4,
+    "location": "Cairo Hub",
+    "timestamp": "2026-02-14T08:39:22.651Z",
+    "signature": "304402206f11b1acd85d339d836a2b960a9b5b257259a1bc3b2023efa7401afb57a51f92022044fa62c77a5bca8984e68c3648a898c3c22cb88c45ffd182d5dbf96d668e2f90"
+  },
+  "previousHash": "3f7c43ef348fb9f2cd727acc6834eda61962108fbb1d8a91a4d5598821ecd384",
+  "hash": "b9c4ecb559cca4b53706b419a5125ab15dd837fbb43cb51712248cf0124fa111"
+}
