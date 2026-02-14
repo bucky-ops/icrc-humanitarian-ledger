@@ -109,8 +109,9 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center">
-                        <div class="w-3 h-3 rounded-full bg-green-500 pulse mr-2"></div>
-                        <span class="text-sm font-medium text-deep-navy" x-text="stats.status"></span>
+                        <span :class="stats.status === 'Online' ? 'bg-green-500' : 'bg-red-500'" 
+                              class="w-3 h-3 rounded-full mr-2 animate-pulse"></span>
+                        <p class="text-2xl font-bold" x-text="stats.status">Checking...</p>
                     </div>
                     <button 
                         @click="auditLedger()"
@@ -203,16 +204,15 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         <template x-for="block in filteredLedger" :key="block.hash">
                             <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-2 font-mono text-sm" x-text="block.data.kitID || 'N/A'"></td>
-                                <td class="px-4 py-2" x-text="block.data.type || 'N/A'"></td>
-                                <td class="px-4 py-2" x-text="block.data.location || 'N/A'"></td>
+                                <td class="px-4 py-2 font-mono text-sm" x-text="block.data.kitID"></td>
+                                <td class="px-4 py-2" x-text="block.data.type"></td>
+                                <td class="px-4 py-2" x-text="block.data.location"></td>
                                 <td class="px-4 py-2">
-                                    <span :class="block.data.temperature > 8 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'" 
-                                          class="px-2 py-1 rounded-full text-xs font-bold"
-                                          x-text="block.data.temperature + '°C'">
+                                    <span x-text="block.data.temperature + '°C'"
+                                          :class="block.data.temperature > 8 ? 'text-red-600 font-bold' : 'text-green-600'">
                                     </span>
                                 </td>
-                                <td class="px-4 py-2 text-xs text-gray-500" x-text="new Date(block.timestamp).toLocaleString()"></td>
+                                <td class="px-4 py-2 text-xs text-gray-500" x-text="new Date(block.timestamp).toLocaleTimeString()"></td>
                                 <td class="px-4 py-2">
                                     <span class="text-green-600">● Verified</span>
                                 </td>
@@ -239,7 +239,11 @@
         function dashboardApp() {
             return {
                 ledger: [],
-                stats: { total: 0, status: 'Checking...' },
+                stats: { 
+                    total: 0, 
+                    status: 'Offline', // Start as offline
+                    auditStatus: 'Secure' 
+                },
                 isVerifying: false,
                 searchTerm: '',
 
@@ -251,19 +255,33 @@
                     );
                 },
 
-                async fetchLedger() {
-                    console.log("🛠️ Attempting to fetch ledger...");
+                // 1. Check if the server is actually alive
+                async checkHealth() {
                     try {
-                        const response = await fetch('/ledger');
-                        const data = await response.json();
+                        const res = await fetch('/health');
+                        const data = await res.json();
+                        this.stats.status = data.status === 'OK' ? 'Online' : 'Error';
+                    } catch (err) {
+                        this.stats.status = 'Offline';
+                    }
+                },
+
+                // 2. Fetch the actual medical kits
+                async fetchLedger() {
+                    try {
+                        const res = await fetch('/ledger');
+                        const data = await res.json();
                         
-                        // Handle different data shapes
-                        this.ledger = Array.isArray(data.blocks) ? data.blocks : (data.chain || []);
+                        // DATA MAPPING: This is where we fix the 'undefined' issue
+                        // We check if data is a direct array, or inside an object property
+                        const cleanData = Array.isArray(data.blocks) ? data.blocks : (data.chain || data.ledger || []);
+                        
+                        this.ledger = cleanData;
                         this.stats.total = this.ledger.length;
                         
-                        console.log("✅ Ledger Data Loaded:", this.ledger);
+                        console.log("📊 Ledger sync successful. Total kits:", this.stats.total);
                     } catch (err) {
-                        console.error("❌ Ledger Fetch Error:", err);
+                        console.error("❌ Failed to sync ledger:", err);
                     }
                 },
 
@@ -281,11 +299,16 @@
                     }
                 },
 
-                init() {
-                    console.log("🚀 Alpine initialized and running!");
-                    this.fetchLedger();
-                    // Check for new data every 10 seconds
-                    setInterval(() => this.fetchLedger(), 10000);
+                async init() {
+                    console.log("🚀 Alpine initialized");
+                    await this.checkHealth();
+                    await this.fetchLedger();
+                    
+                    // Auto-refresh every 5 seconds
+                    setInterval(async () => {
+                        await this.checkHealth();
+                        await this.fetchLedger();
+                    }, 5000);
                 }
             }
         }
