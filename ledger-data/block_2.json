@@ -1,0 +1,15 @@
+{
+  "index": 2,
+  "timestamp": "2026-02-14T07:03:01.903Z",
+  "data": {
+    "kitID": "KIT-001",
+    "type": "Vaccine",
+    "origin": "Geneva HQ",
+    "temperature": 4,
+    "location": "Warehouse",
+    "timestamp": "2026-02-14T07:03:01.890Z",
+    "signature": "30450221008ae76ac945d1091dc43b64747145d5619edc2728800556b2722c9003ffd2c9c4022070742ed58732d9211e1e64f626f517ddcdc3f730134dfaffd14d5bc56967c2ca"
+  },
+  "previousHash": "b67da958ddd46d5e39c2374ef524847b07b5e254ddb5c5318d690ca7b5b08cec",
+  "hash": "865cb5a85458ee331aad287513410c62d609c1cd245b4822163b22002b916081"
+}

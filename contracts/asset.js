@@ -53,7 +53,8 @@ class MedicalKit {
   }
 }
 
-// THIS IS THE MISSING LINE:
-module.exports = MedicalKit;
+module.exports = {
+  MedicalKit
+};
 ;
 

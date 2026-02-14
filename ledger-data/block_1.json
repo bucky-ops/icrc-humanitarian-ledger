@@ -1,0 +1,15 @@
+{
+  "index": 1,
+  "timestamp": "2026-02-14T07:02:42.732Z",
+  "data": {
+    "kitID": "KIT-001",
+    "type": "Vaccine",
+    "origin": "Geneva HQ",
+    "temperature": 5,
+    "location": "Nairobi Hub",
+    "timestamp": "2026-02-14T07:02:42.725Z",
+    "signature": "30450220760d68b57b326c3e5bf20c9574fffea4120c98a18b2c23b45787ac46b02d8b7e02210099eac4c2bcad358f6b439f7b989fdac8bc379bcc0e64ecbdfafc75bea161d640"
+  },
+  "previousHash": "04a96a3edaafb9461f905dc0becd462ac77a7a84ef4f66eeaa06d0085297938d",
+  "hash": "b67da958ddd46d5e39c2374ef524847b07b5e254ddb5c5318d690ca7b5b08cec"
+}
