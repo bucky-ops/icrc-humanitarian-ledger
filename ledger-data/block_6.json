@@ -1,0 +1,15 @@
+{
+  "index": 6,
+  "timestamp": "2026-02-14T07:30:29.317Z",
+  "data": {
+    "kitID": "KIT-002",
+    "type": "Surgical",
+    "origin": "Geneva HQ",
+    "temperature": 6,
+    "location": "Lagos Distribution Center",
+    "timestamp": "2026-02-14T07:30:29.262Z",
+    "signature": "304502200243bc8a905880736e9f79e8b4447932ca7a2d73c7a8bd89d56f0f8684a9540b022100a03c9d5fc31a8f7340aa7c055c686f063276b4aa8a44730d3eaab4f3bffd2fb0"
+  },
+  "previousHash": "d801e5b8ef5bc558c87deeb9c30b4307e9f2ed44d961f0b6a63f337b614a82fb",
+  "hash": "f627fdc09506eeaa73b22cdc84f801e7a8fc33502f4241f3418d5f1d6d373265"
+}
