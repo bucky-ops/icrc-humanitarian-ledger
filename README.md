@@ -76,4 +76,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## 🙏 Acknowledgments
 
 - Inspired by Walmart's blockchain implementation for supply chain transparency
-- Built for the International Committee of the Red Cross (ICRC) humanitarian mission
+- Built for organisations like the International Committee of the Red Cross (ICRC) humanitarian mission
