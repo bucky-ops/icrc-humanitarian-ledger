@@ -1,0 +1,15 @@
+{
+  "index": 16,
+  "timestamp": "2026-02-14T09:45:47.981Z",
+  "data": {
+    "kitID": "KIT-TEST-001",
+    "type": "Emergency Medical Kit",
+    "origin": "ICRC Geneva",
+    "temperature": 5,
+    "location": "Geneva Warehouse",
+    "timestamp": "2026-02-14T09:45:47.958Z",
+    "signature": "3045022100f8066359609a3351cf01733d26a7489937e766ade02e25644b7adbe84648b65302206be9c9d6616057be71284e4ac8bd17de5a38e8d393fd52bf2245651e7246e873"
+  },
+  "previousHash": "3f2d5b8f4e056369c1bdee81ff46ba90922c1587b74f7579727e002e7b954dd8",
+  "hash": "6ef895ee8d02ed5c278690b6dd489fa4c602581bf34f495262c2998549a614e0"
+}
