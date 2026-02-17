@@ -56,6 +56,15 @@ A blockchain-based supply chain tracking system for humanitarian organizations, 
 - [x] Intelligence services for analytics
 - [x] Logging services for audit trails
 
+### Phase 6: Humanitarian Forecasting (Prediction Markets)
+- [x] Prediction market creation and management
+- [x] Constant Product Market Maker (AMM) implementation
+- [x] YES/NO share trading system
+- [x] Incentive credits for performance tracking
+- [x] Automated market resolution based on blockchain data
+- [x] Leaderboard and gamification for field staff
+- [x] Dark mode trading interface (Polymarket-style)
+
 ## 🔐 Security
 
 - Private keys are stored locally and excluded from version control
@@ -97,6 +106,7 @@ A blockchain-based supply chain tracking system for humanitarian organizations, 
 
 ### API Endpoints
 
+#### Core Blockchain Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/health` | Health check endpoint |
@@ -104,6 +114,18 @@ A blockchain-based supply chain tracking system for humanitarian organizations, 
 | GET | `/ledger/:id` | Get specific kit history |
 | POST | `/add-kit` | Add new medical kit |
 | GET | `/audit` | Audit blockchain integrity |
+
+#### Prediction Market Endpoints (Phase 6)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/markets` | Get all prediction markets |
+| GET | `/api/markets/:id` | Get specific market details |
+| POST | `/api/markets` | Create new prediction market (Admin) |
+| POST | `/api/markets/:id/buy` | Buy YES/NO shares |
+| POST | `/api/markets/:id/sell` | Sell YES/NO shares |
+| GET | `/api/leaderboard` | Get top forecasters leaderboard |
+| GET | `/api/user/:id/positions` | Get user's market positions |
+| POST | `/api/markets/:id/resolve` | Resolve a market |
 
 ## 🧪 Testing
 
@@ -122,6 +144,11 @@ Run the ledger integrity test:
 node test-ledger.js
 ```
 
+Run the prediction market test:
+```bash
+node test-prediction.js
+```
+
 ## 📁 Project Structure
 
 ```
@@ -129,13 +156,23 @@ icrc-humanitarian-ledger/
 ├── bin/                    # Utility scripts
 ├── config/                 # Configuration files
 ├── contracts/              # Smart contracts and models
+│   ├── asset.js           # MedicalKit asset model
+│   ├── ledger.js          # Blockchain manager
+│   ├── market.js          # Prediction market logic
+│   ├── shares.js          # Share management
+│   └── rules.js           # Validation rules
 ├── identity/               # Cryptographic identities
 ├── ledger-data/            # Blockchain ledger data
 ├── middleware/             # Security middleware
 ├── public/                 # Frontend assets
+│   ├── index.html         # Main dashboard
+│   ├── markets.html       # Prediction markets UI
+│   ├── login.html         # Login page
+│   └── register.html      # Registration page
 ├── services/               # Business logic services
 ├── server.js               # Main server file
-└── test-*.js               # Test files
+├── test-*.js               # Test files
+└── README.md               # Project documentation
 ```
 
 ## 🤝 Contributing
@@ -167,4 +204,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## 🏷️ Version
 
-Current Release: v1.0.1
+Current Release: v1.1.0 (Phase 6 - Humanitarian Forecasting)

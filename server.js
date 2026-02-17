@@ -1,4 +1,4 @@
-// server.js - API Gateway for the ICRC Blockchain (Phase 3)
+// server.js - API Gateway for the ICRC Blockchain (Phase 3 & 6)
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -6,6 +6,8 @@ const Blockchain = require('./contracts/ledger');
 const { MedicalKit } = require('./contracts/asset');
 const { validateMedicalKit } = require('./contracts/rules');
 const { generateKeyPair, signData } = require('./identity/crypto-util');
+const { PredictionMarket } = require('./contracts/market');
+const { ShareManager } = require('./contracts/shares');
 const crypto = require('crypto');
 
 const app = express();
@@ -19,6 +21,10 @@ app.use(express.static('public'));
 
 // Initialize the blockchain
 const blockchain = new Blockchain();
+
+// Initialize prediction markets and share manager
+const markets = new Map(); // Store active markets
+const shareManager = new ShareManager();
 
 // Load ICRC HQ keys (in a real system, these would be loaded securely)
 let hqPrivateKey, hqPublicKey;
@@ -264,6 +270,244 @@ app.get('/audit', (req, res) => {
   }
 });
 
+// ============================================
+// PREDICTION MARKET ENDPOINTS (Phase 6)
+// ============================================
+
+// GET /api/markets - Get all prediction markets
+app.get('/api/markets', (req, res) => {
+  try {
+    const allMarkets = Array.from(markets.values()).map(m => m.toJSON());
+    res.status(200).json({
+      success: true,
+      count: allMarkets.length,
+      markets: allMarkets
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// GET /api/markets/:id - Get specific market
+app.get('/api/markets/:id', (req, res) => {
+  try {
+    const market = markets.get(req.params.id);
+    if (!market) {
+      return res.status(404).json({
+        success: false,
+        message: 'Market not found'
+      });
+    }
+    res.status(200).json({
+      success: true,
+      market: market.toJSON()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// POST /api/markets - Create a new prediction market (Admin only)
+app.post('/api/markets', (req, res) => {
+  try {
+    const { marketID, question, kitID, deadline, createdBy } = req.body;
+    
+    if (!marketID || !question || !kitID || !deadline) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: marketID, question, kitID, deadline'
+      });
+    }
+    
+    // Check if market already exists
+    if (markets.has(marketID)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Market ID already exists'
+      });
+    }
+    
+    // Create new market
+    const market = new PredictionMarket(marketID, question, kitID, deadline, createdBy || 'admin');
+    markets.set(marketID, market);
+    
+    // Initialize user if needed
+    shareManager.initializeUser(createdBy || 'admin');
+    
+    console.log(`📊 Prediction Market Created: ${marketID} - ${question}`);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Prediction market created successfully',
+      market: market.toJSON()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// POST /api/markets/:id/buy - Buy shares in a market
+app.post('/api/markets/:id/buy', (req, res) => {
+  try {
+    const { userId, outcome, amount } = req.body;
+    const market = markets.get(req.params.id);
+    
+    if (!market) {
+      return res.status(404).json({
+        success: false,
+        message: 'Market not found'
+      });
+    }
+    
+    if (!userId || !outcome || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: userId, outcome, amount'
+      });
+    }
+    
+    // Initialize user if needed
+    shareManager.initializeUser(userId);
+    
+    // Buy shares
+    const transaction = shareManager.buyShares(userId, market, outcome, amount);
+    
+    res.status(200).json({
+      success: true,
+      message: `Bought ${amount} ${outcome} shares`,
+      transaction,
+      balance: shareManager.getBalance(userId)
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// POST /api/markets/:id/sell - Sell shares from a market
+app.post('/api/markets/:id/sell', (req, res) => {
+  try {
+    const { userId, outcome, amount } = req.body;
+    const market = markets.get(req.params.id);
+    
+    if (!market) {
+      return res.status(404).json({
+        success: false,
+        message: 'Market not found'
+      });
+    }
+    
+    if (!userId || !outcome || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: userId, outcome, amount'
+      });
+    }
+    
+    // Sell shares
+    const transaction = shareManager.sellShares(userId, market, outcome, amount);
+    
+    res.status(200).json({
+      success: true,
+      message: `Sold ${amount} ${outcome} shares`,
+      transaction,
+      balance: shareManager.getBalance(userId)
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// GET /api/leaderboard - Get top forecasters
+app.get('/api/leaderboard', (req, res) => {
+  try {
+    const leaderboard = shareManager.getLeaderboard();
+    res.status(200).json({
+      success: true,
+      leaderboard
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// GET /api/user/:id/positions - Get user's positions
+app.get('/api/user/:id/positions', (req, res) => {
+  try {
+    const positions = shareManager.getUserPositions(req.params.id);
+    res.status(200).json({
+      success: true,
+      positions
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// POST /api/markets/:id/resolve - Resolve a market (automated or admin)
+app.post('/api/markets/:id/resolve', (req, res) => {
+  try {
+    const market = markets.get(req.params.id);
+    
+    if (!market) {
+      return res.status(404).json({
+        success: false,
+        message: 'Market not found'
+      });
+    }
+    
+    const { outcome } = req.body; // 'YES' or 'NO'
+    
+    if (!outcome || !['YES', 'NO'].includes(outcome)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid outcome. Must be YES or NO'
+      });
+    }
+    
+    // Resolve market
+    market.resolve(outcome);
+    
+    // Update all user positions
+    for (const userId of Object.keys(shareManager.userBalances)) {
+      shareManager.resolvePosition(userId, market);
+    }
+    
+    console.log(`✅ Market ${market.marketID} resolved as ${outcome}`);
+    
+    res.status(200).json({
+      success: true,
+      message: `Market resolved as ${outcome}`,
+      market: market.toJSON()
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 // Handle 404 for undefined routes
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -276,9 +520,17 @@ app.use('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 ICRC Blockchain API Gateway running on http://localhost:${PORT}`);
   console.log(`📋 Available endpoints:`);
-  console.log(`   GET  /health     - Health check`);
-  console.log(`   GET  /ledger    - View entire ledger`);
-  console.log(`   GET  /ledger/:id - View history of specific kit`);
-  console.log(`   POST /add-kit   - Add new medical kit`);
-  console.log(`   GET  /audit     - Audit blockchain integrity`);
+  console.log(`   GET  /health           - Health check`);
+  console.log(`   GET  /ledger           - View entire ledger`);
+  console.log(`   GET  /ledger/:id       - View history of specific kit`);
+  console.log(`   POST /add-kit          - Add new medical kit`);
+  console.log(`   GET  /audit            - Audit blockchain integrity`);
+  console.log(`\n📊 Prediction Market Endpoints (Phase 6):`);
+  console.log(`   GET  /api/markets      - Get all prediction markets`);
+  console.log(`   GET  /api/markets/:id  - Get specific market`);
+  console.log(`   POST /api/markets      - Create new market (Admin)`);
+  console.log(`   POST /api/markets/:id/buy  - Buy shares`);
+  console.log(`   POST /api/markets/:id/sell - Sell shares`);
+  console.log(`   GET  /api/leaderboard  - Get top forecasters`);
+  console.log(`   POST /api/markets/:id/resolve - Resolve market`);
 });

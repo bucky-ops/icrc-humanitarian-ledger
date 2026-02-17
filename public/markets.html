@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICRC | Humanitarian Forecasts</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine JS CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Dark Mode Trading Interface */
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        .bg-trading {
+            background-color: #1e293b;
+        }
+        .bg-card {
+            background-color: #334155;
+        }
+        .border-trading {
+            border-color: #475569;
+        }
+        .text-success {
+            color: #22c55e;
+        }
+        .bg-success {
+            background-color: #22c55e;
+        }
+        .text-danger {
+            color: #ef4444;
+        }
+        .bg-danger {
+            background-color: #ef4444;
+        }
+        .hover-bg-success:hover {
+            background-color: #16a34a;
+        }
+        .hover-bg-danger:hover {
+            background-color: #dc2626;
+        }
+        .price-up {
+            color: #22c55e;
+        }
+        .price-down {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div x-data="forecastApp()" x-init="init()" class="flex">
+        <!-- Sidebar -->
+        <aside class="bg-trading w-64 min-h-screen p-6 hidden md:block">
+            <div class="mb-10">
+                <h2 class="text-xl font-bold flex items-center">
+                    <i data-lucide="trending-up" class="mr-2 text-success"></i>
+                    ICRC Forecasts
+                </h2>
+                <p class="text-gray-400 text-sm mt-1">Prediction Markets</p>
+            </div>
+            
+            <nav>
+                <ul class="space-y-2">
+                    <li class="bg-success/20 text-success rounded-lg p-3 flex items-center">
+                        <i data-lucide="circle-help" class="mr-3"></i>
+                        <span>Markets</span>
+                    </li>
+                    <li class="hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer" @click="showLeaderboard = !showLeaderboard">
+                        <i data-lucide="trophy" class="mr-3"></i>
+                        <span>Leaderboard</span>
+                    </li>
+                    <li class="hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer" @click="window.location.href='/'">
+                        <i data-lucide="arrow-left" class="mr-3"></i>
+                        <span>Back to Dashboard</span>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- Top Forecasters (Leaderboard) -->
+            <div x-show="showLeaderboard" class="mt-10">
+                <h3 class="text-sm font-semibold text-gray-400 mb-4">TOP FORECASTERS</h3>
+                <div class="space-y-3">
+                    <template x-for="(user, index) in leaderboard.slice(0, 5)" :key="user.userId">
+                        <div class="flex items-center justify-between text-sm">
+                            <div class="flex items-center">
+                                <span class="w-5 h-5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 flex items-center justify-center text-xs font-bold mr-2" x-text="index + 1"></span>
+                                <span x-text="user.userId.substring(0, 12) + '...'"></span>
+                            </div>
+                            <span class="text-success" x-text="user.accuracy + '%'"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Header -->
+            <header class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white mb-2">Humanitarian Forecasting</h1>
+                        <p class="text-gray-400">Predict supply chain outcomes with incentive credits</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-400">Your Balance</p>
+                        <p class="text-2xl font-bold text-success" x-text="userBalance + ' CR'"></p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Create Market Button (Admin) -->
+            <div class="mb-6" x-show="isAdmin">
+                <button @click="showCreateModal = true" class="bg-success hover-bg-success text-white px-6 py-3 rounded-lg flex items-center">
+                    <i data-lucide="plus-circle" class="mr-2"></i>
+                    Create Prediction Market
+                </button>
+            </div>
+
+            <!-- Active Markets Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <template x-for="market in markets" :key="market.marketID">
+                    <div class="bg-trading rounded-xl border border-trading p-6">
+                        <!-- Market Header -->
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="text-xs text-gray-400" x-text="'Kit: ' + market.kitID"></span>
+                                <h3 class="text-lg font-semibold text-white mt-1" x-text="market.question"></h3>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                                  :class="market.status === 'OPEN' ? 'bg-success/20 text-success' : 'bg-gray-600 text-gray-300'"
+                                  x-text="market.status">
+                            </span>
+                        </div>
+
+                        <!-- Price Graph (0-100) -->
+                        <div class="mb-6">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-success">YES <span x-text="market.currentPrice.YES + '%'"></span></span>
+                                <span class="text-danger">NO <span x-text="market.currentPrice.NO + '%'"></span></span>
+                            </div>
+                            <div class="h-3 bg-gray-700 rounded-full overflow-hidden flex">
+                                <div class="bg-success transition-all duration-500" :style="'width: ' + market.currentPrice.YES + '%'"></div>
+                                <div class="bg-danger transition-all duration-500" :style="'width: ' + market.currentPrice.NO + '%'"></div>
+                            </div>
+                        </div>
+
+                        <!-- Trading Buttons -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <button @click="openTradeModal(market, 'YES')" 
+                                    class="bg-success hover-bg-success text-white py-3 rounded-lg font-semibold">
+                                Buy YES
+                            </button>
+                            <button @click="openTradeModal(market, 'NO')" 
+                                    class="bg-danger hover-bg-danger text-white py-3 rounded-lg font-semibold">
+                                Buy NO
+                            </button>
+                        </div>
+
+                        <!-- Market Info -->
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>Volume: <span class="text-white" x-text="market.totalVolume + ' CR'"></span></span>
+                            <span>Ends: <span class="text-white" x-text="new Date(market.deadline).toLocaleDateString()"></span></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Create Market Modal -->
+            <div x-show="showCreateModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div class="bg-trading rounded-xl p-6 w-full max-w-md">
+                    <h2 class="text-xl font-bold mb-4">Create Prediction Market</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Market ID</label>
+                            <input type="text" x-model="newMarket.marketID" class="w-full bg-card border border-trading rounded-lg px-4 py-2 text-white" placeholder="MKT-001">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Question</label>
+                            <input type="text" x-model="newMarket.question" class="w-full bg-card border border-trading rounded-lg px-4 py-2 text-white" placeholder="Will Kit-X arrive on time?">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Kit ID</label>
+                            <input type="text" x-model="newMarket.kitID" class="w-full bg-card border border-trading rounded-lg px-4 py-2 text-white" placeholder="KIT-001">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Deadline</label>
+                            <input type="datetime-local" x-model="newMarket.deadline" class="w-full bg-card border border-trading rounded-lg px-4 py-2 text-white">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button @click="createMarket" class="flex-1 bg-success hover-bg-success text-white py-2 rounded-lg">Create</button>
+                        <button @click="showCreateModal = false" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-lg">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trade Modal -->
+            <div x-show="showTradeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div class="bg-trading rounded-xl p-6 w-full max-w-md">
+                    <h2 class="text-xl font-bold mb-4">
+                        <span x-text="tradingMarket?.question"></span>
+                    </h2>
+                    
+                    <div class="mb-4">
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold"
+                              :class="tradeOutcome === 'YES' ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'"
+                              x-text="tradeOutcome">
+                        </span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Amount (Shares)</label>
+                            <input type="number" x-model.number="tradeAmount" class="w-full bg-card border border-trading rounded-lg px-4 py-2 text-white" placeholder="100">
+                        </div>
+                        <div class="text-sm text-gray-400">
+                            Estimated Cost: <span class="text-white font-semibold" x-text="calculateCost() + ' CR'"></span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button @click="executeTrade" 
+                                class="flex-1 py-2 rounded-lg font-semibold"
+                                :class="tradeOutcome === 'YES' ? 'bg-success hover-bg-success' : 'bg-danger hover-bg-danger'"
+                                x-text="'Buy ' + tradeOutcome">
+                        </button>
+                        <button @click="showTradeModal = false" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-lg">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        function forecastApp() {
+            return {
+                markets: [],
+                leaderboard: [],
+                userBalance: 10000,
+                isAdmin: true,
+                showCreateModal: false,
+                showTradeModal: false,
+                showLeaderboard: false,
+                newMarket: {
+                    marketID: '',
+                    question: '',
+                    kitID: '',
+                    deadline: ''
+                },
+                tradingMarket: null,
+                tradeOutcome: 'YES',
+                tradeAmount: 100,
+
+                async init() {
+                    await this.fetchMarkets();
+                    await this.fetchLeaderboard();
+                    setInterval(() => {
+                        this.fetchMarkets();
+                        this.fetchLeaderboard();
+                    }, 10000);
+                },
+
+                async fetchMarkets() {
+                    try {
+                        const res = await fetch('/api/markets');
+                        const data = await res.json();
+                        this.markets = data.markets || [];
+                    } catch (err) {
+                        console.error('Failed to fetch markets:', err);
+                    }
+                },
+
+                async fetchLeaderboard() {
+                    try {
+                        const res = await fetch('/api/leaderboard');
+                        const data = await res.json();
+                        this.leaderboard = data.leaderboard || [];
+                    } catch (err) {
+                        console.error('Failed to fetch leaderboard:', err);
+                    }
+                },
+
+                async createMarket() {
+                    try {
+                        const res = await fetch('/api/markets', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                ...this.newMarket,
+                                createdBy: 'admin'
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            alert('Market created successfully!');
+                            this.showCreateModal = false;
+                            this.newMarket = { marketID: '', question: '', kitID: '', deadline: '' };
+                            this.fetchMarkets();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (err) {
+                        alert('Failed to create market');
+                    }
+                },
+
+                openTradeModal(market, outcome) {
+                    this.tradingMarket = market;
+                    this.tradeOutcome = outcome;
+                    this.tradeAmount = 100;
+                    this.showTradeModal = true;
+                },
+
+                calculateCost() {
+                    if (!this.tradingMarket) return 0;
+                    const price = this.tradingMarket.currentPrice[this.tradeOutcome] / 100;
+                    return Math.round(this.tradeAmount * price * 100) / 100;
+                },
+
+                async executeTrade() {
+                    try {
+                        const res = await fetch(`/api/markets/${this.tradingMarket.marketID}/buy`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: 'user_' + Date.now(),
+                                outcome: this.tradeOutcome,
+                                amount: this.tradeAmount
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            alert(`Successfully bought ${this.tradeAmount} ${this.tradeOutcome} shares!`);
+                            this.userBalance -= data.transaction.cost;
+                            this.showTradeModal = false;
+                            this.fetchMarkets();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (err) {
+                        alert('Failed to execute trade');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
