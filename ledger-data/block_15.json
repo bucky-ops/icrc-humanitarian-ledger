@@ -1,0 +1,15 @@
+{
+  "index": 15,
+  "timestamp": "2026-02-14T09:05:48.675Z",
+  "data": {
+    "kitID": "KIT-313",
+    "type": "Medication",
+    "origin": "Berlin",
+    "temperature": 5,
+    "location": "Beirut Station",
+    "timestamp": "2026-02-14T09:05:48.661Z",
+    "signature": "304502204acfeaec871ece4f1cb977f265e1a0e5d2c4adf68787ca19a96506ce4cf2bdb7022100d2cccc3ff237456a19a0522632f4c36dd87159ca6da92e3e0b7f450cb1016815"
+  },
+  "previousHash": "cd082205ec970dcd98a445c566768b546de91217e94652ce32b04e798f64b6c8",
+  "hash": "3f2d5b8f4e056369c1bdee81ff46ba90922c1587b74f7579727e002e7b954dd8"
+}

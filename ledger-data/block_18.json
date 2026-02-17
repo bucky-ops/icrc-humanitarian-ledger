@@ -1,0 +1,15 @@
+{
+  "index": 18,
+  "timestamp": "2026-02-14T10:06:48.344Z",
+  "data": {
+    "kitID": "KIT-9445-1771063608273",
+    "type": "Pediatric Kit",
+    "origin": "UNICEF Supply Division",
+    "temperature": 6,
+    "location": "Nairobi Depot",
+    "timestamp": "2026-02-14T10:06:48.280Z",
+    "signature": "30450220051d5d21d9cf7c154e414f6656c6908a5113ef9fc38597fcb708efe6d4bd2488022100dc0eaef9a912bd60d78ad7e7b69fdbb076b6d5a8bf379df348ba3f74945de78c"
+  },
+  "previousHash": "4d8944ec0ddc6f6b27b73e628cb55e36cec6338df6595790d4f68c5e3232a107",
+  "hash": "4359055f0475344b6dd88cc7ab0851606a0aff0c992558e6d466915c0ee82c2b"
+}

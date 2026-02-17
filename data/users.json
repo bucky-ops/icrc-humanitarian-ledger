@@ -1,0 +1,28 @@
+[
+  {
+    "id": "1771166737983",
+    "email": "kamama.collin@gmail.com",
+    "password": "$2b$10$7o9sYT/ndeJ8umM0MFNmIee7Y0BRw9dPVPuLXytyv.CJquxrdtx8C",
+    "role": "user",
+    "createdAt": "2026-02-15T14:45:37.984Z",
+    "lastLogin": "2026-02-15T15:23:26.776Z",
+    "status": "Approved"
+  },
+  {
+    "id": "1771166884419",
+    "email": "admin@gmail.com",
+    "password": "$2b$10$BxWOhOmNmEDjQjnPLZfU4u3.A3A7GXUz.PRl7MXE0oyGKO3zpn6JS",
+    "role": "admin",
+    "createdAt": "2026-02-15T14:48:04.419Z",
+    "lastLogin": "2026-02-15T14:48:23.813Z"
+  },
+  {
+    "id": "1771167546388",
+    "email": "admin@icrc.org",
+    "password": "$2b$10$Prn4q9AQAFmhR6/0MesPm.Rd1ztI4yrmWpb8U1WxCKjJSVAEGbGVa",
+    "role": "admin",
+    "status": "Approved",
+    "createdAt": "2026-02-15T14:59:06.388Z",
+    "lastLogin": "2026-02-15T15:22:06.721Z"
+  }
+]

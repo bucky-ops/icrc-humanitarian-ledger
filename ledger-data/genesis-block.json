@@ -1,0 +1,16 @@
+{
+  "index": 0,
+  "timestamp": "2026-02-15T14:19:21.571Z",
+  "data": {
+    "kitID": "KIT-001",
+    "type": "Emergency",
+    "origin": "Geneva, Switzerland",
+    "temperature": 4,
+    "location": "Geneva Warehouse",
+    "timestamp": "2026-02-15T14:19:21.554Z",
+    "signature": "30450220111ba522c5c6db7ca68217f734f2069734212e5141349e3fdfc14d6b32fa5532022100ea53da7a9119a63b8f21263c6de472359d0e3ef904627895393fae66a1018f6b"
+  },
+  "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "hash": "bdeb579096919e0f819a52349f969899575e0ff92263d59e4406743d83ca15cb",
+  "validator": "ICRC-HQ"
+}

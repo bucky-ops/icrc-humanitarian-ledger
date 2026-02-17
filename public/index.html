@@ -47,73 +47,124 @@
         .status-warning {
             background-color: #f59e0b;
         }
+        
+        /* Slide-over panel styles */
+        .slide-over {
+            transition: transform 0.3s ease-in-out;
+        }
+        .slide-over-enter {
+            transform: translateX(100%);
+        }
+        .slide-over-enter-active {
+            transform: translateX(0);
+        }
+        .slide-over-exit {
+            transform: translateX(0);
+        }
+        .slide-over-exit-active {
+            transform: translateX(100%);
+        }
+        
+        /* Sidebar transition */
+        .sidebar-slide {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        /* Map marker animation */
+        .marker-pulse {
+            animation: markerPulse 2s infinite;
+        }
+        @keyframes markerPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
-<body class="bg-slate min-h-screen flex">
+<body class="bg-slate min-h-screen flex" x-data="app()">
     <!-- Sidebar Navigation -->
-    <aside class="bg-deep-navy text-white w-64 min-h-screen p-6 hidden md:block">
+    <aside x-show="sidebarOpen" 
+           :class="{'transform translate-x-0': sidebarOpen, 'transform -translate-x-full': !sidebarOpen}" 
+           class="bg-deep-navy text-white w-64 min-h-screen p-6 fixed md:relative z-30 sidebar-slide">
         <div class="mb-10">
             <h2 class="text-xl font-bold flex items-center">
                 <i data-lucide="shield-check" class="mr-2"></i>
                 ICRC Supply Chain
             </h2>
-            <p class="text-gray-400 text-sm mt-1">Blockchain Ledger</p>
+            <p class="text-gray-400 text-sm mt-1">Enterprise Platform</p>
         </div>
-        
+
         <nav>
             <ul class="space-y-2">
-                <li class="bg-icrc-red rounded-lg p-3 flex items-center">
+                <li @click="setActiveView('dashboard')" 
+                    :class="activeView === 'dashboard' ? 'bg-icrc-red rounded-lg p-3 flex items-center' : 'hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer'"
+                    class="flex items-center">
                     <i data-lucide="home" class="mr-3"></i>
                     <span>Dashboard</span>
                 </li>
-                <li class="hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer">
+                <li @click="setActiveView('assets')" 
+                    :class="activeView === 'assets' ? 'bg-icrc-red rounded-lg p-3 flex items-center' : 'hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer'"
+                    class="flex items-center">
                     <i data-lucide="package" class="mr-3"></i>
                     <span>Assets</span>
                 </li>
-                <li class="hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer">
+                <li @click="setActiveView('locations')" 
+                    :class="activeView === 'locations' ? 'bg-icrc-red rounded-lg p-3 flex items-center' : 'hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer'"
+                    class="flex items-center">
                     <i data-lucide="map-pin" class="mr-3"></i>
                     <span>Locations</span>
                 </li>
-                <li class="hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer">
+                <li @click="setActiveView('activity')" 
+                    :class="activeView === 'activity' ? 'bg-icrc-red rounded-lg p-3 flex items-center' : 'hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer'"
+                    class="flex items-center">
                     <i data-lucide="activity" class="mr-3"></i>
                     <span>Activity</span>
                 </li>
-                <li class="hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer">
+                <li @click="setActiveView('settings')" 
+                    :class="activeView === 'settings' ? 'bg-icrc-red rounded-lg p-3 flex items-center' : 'hover:bg-gray-700 rounded-lg p-3 flex items-center cursor-pointer'"
+                    class="flex items-center">
                     <i data-lucide="settings" class="mr-3"></i>
                     <span>Settings</span>
                 </li>
             </ul>
         </nav>
-        
-        <div class="mt-auto absolute bottom-6">
+
+        <div class="mt-auto">
             <div class="flex items-center">
                 <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                    <span class="text-deep-navy font-bold">HQ</span>
+                    <span class="text-deep-navy font-bold" x-text="currentUser.initials">HQ</span>
                 </div>
                 <div>
-                    <p class="font-medium">ICRC Admin</p>
-                    <p class="text-gray-400 text-sm">Headquarters</p>
+                    <p class="font-medium" x-text="currentUser.name">ICRC Admin</p>
+                    <p class="text-gray-400 text-sm" x-text="currentUser.role">Headquarters</p>
                 </div>
             </div>
         </div>
     </aside>
 
+    <!-- Mobile menu button -->
+    <div class="md:hidden fixed top-4 left-4 z-20">
+        <button @click="sidebarOpen = !sidebarOpen" class="bg-deep-navy text-white p-2 rounded-md">
+            <i data-lucide="menu" class="h-6 w-6"></i>
+        </button>
+    </div>
+
     <!-- Main Content -->
-    <main x-data="dashboardApp()" class="flex-1 p-6">
+    <main class="flex-1 p-6 pt-16 md:pt-6">
         <!-- Header -->
         <header class="mb-8">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-deep-navy">Global Supply Chain Ledger</h1>
+                    <h1 class="text-2xl font-bold text-deep-navy" x-text="getViewTitle()">Global Supply Chain Ledger</h1>
                     <p class="text-gray-600">Real-time tracking of humanitarian supplies</p>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center">
-                        <span :class="stats.status === 'Online' ? 'bg-green-500' : 'bg-red-500'" 
+                        <span :class="stats.status === 'Online' ? 'bg-green-500' : 'bg-red-500'"
                               class="w-3 h-3 rounded-full mr-2 animate-pulse"></span>
                         <p class="text-2xl font-bold" x-text="stats.status">Checking...</p>
                     </div>
-                    <button 
+                    <button
                         @click="auditLedger()"
                         :disabled="isVerifying"
                         class="bg-icrc-red hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center disabled:opacity-50"
@@ -123,139 +174,741 @@
                         <span x-show="!isVerifying">Verify Ledger</span>
                         <span x-show="isVerifying">Verifying...</span>
                     </button>
+                    <button
+                        @click="logout()"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md flex items-center"
+                    >
+                        <i data-lucide="log-out" class="mr-2"></i>
+                        <span>Logout</span>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <!-- Asset Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- Total Kits Tracked Card -->
-            <div class="bg-white rounded-xl shadow p-6 border-l-4 border-icrc-red">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-gray-500 text-sm font-medium">Total Kits Tracked</p>
-                        <p class="text-3xl font-bold text-deep-navy mt-1" x-text="stats.total"></p>
+        <!-- Dashboard View -->
+        <div x-show="activeView === 'dashboard'" x-transition>
+            <!-- Asset Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Total Kits Tracked Card -->
+                <div class="bg-white rounded-xl shadow p-6 border-l-4 border-icrc-red">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Total Kits Tracked</p>
+                            <p class="text-3xl font-bold text-deep-navy mt-1" x-text="stats.total"></p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-lg">
+                            <i data-lucide="package" class="text-icrc-red"></i>
+                        </div>
                     </div>
-                    <div class="bg-red-100 p-3 rounded-lg">
-                        <i data-lucide="package" class="text-icrc-red"></i>
+                </div>
+
+                <!-- Network Status Card -->
+                <div class="bg-white rounded-xl shadow p-6 border-l-4 border-green-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Network Status</p>
+                            <p class="text-3xl font-bold text-deep-navy mt-1" x-text="stats.status"></p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i data-lucide="wifi" class="text-green-500"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compliance Rate Card -->
+                <div class="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Compliance Rate</p>
+                            <p class="text-3xl font-bold text-deep-navy mt-1" x-text="(ledger.length > 0 ? Math.round((ledger.filter(item => item.data.temperature >= 2 && item.data.temperature <= 8).length / ledger.length) * 100) : 0) + '%'"></p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i data-lucide="thermometer" class="text-blue-500"></i>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Network Status Card -->
-            <div class="bg-white rounded-xl shadow p-6 border-l-4 border-green-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-gray-500 text-sm font-medium">Network Status</p>
-                        <p class="text-3xl font-bold text-deep-navy mt-1" x-text="stats.status"></p>
-                    </div>
-                    <div class="bg-green-100 p-3 rounded-lg">
-                        <i data-lucide="wifi" class="text-green-500"></i>
-                    </div>
+            <!-- Search/Trace Bar -->
+            <div class="mb-6">
+                <div class="relative">
+                    <input
+                        type="text"
+                        placeholder="Search by Kit ID..."
+                        x-model="searchTerm"
+                        class="w-full p-4 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent"
+                    />
+                    <i data-lucide="search" class="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"></i>
                 </div>
             </div>
 
-            <!-- Compliance Rate Card -->
-            <div class="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-gray-500 text-sm font-medium">Compliance Rate</p>
-                        <p class="text-3xl font-bold text-deep-navy mt-1" x-text="(ledger.length > 0 ? Math.round((ledger.filter(item => item.data.temperature >= 2 && item.data.temperature <= 8).length / ledger.length) * 100) : 0) + '%'"></p>
-                    </div>
-                    <div class="bg-blue-100 p-3 rounded-lg">
-                        <i data-lucide="thermometer" class="text-blue-500"></i>
-                    </div>
+            <!-- Traceability Table -->
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-deep-navy">Supply Chain Records</h3>
+                    <span class="text-sm text-gray-500" x-text="filteredLedger.length + ' records'"></span>
                 </div>
-            </div>
-        </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kit ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temperature</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <template x-for="block in filteredLedger" :key="block.hash">
+                                <tr class="border-b hover:bg-gray-50 cursor-pointer" @click="showDetailedCard(block)">
+                                    <td class="px-4 py-2 font-mono text-sm" x-text="block.data.kitID"></td>
+                                    <td class="px-4 py-2" x-text="block.data.type"></td>
+                                    <td class="px-4 py-2" x-text="block.data.location"></td>
+                                    <td class="px-4 py-2">
+                                        <span x-text="block.data.temperature + '°C'"
+                                              :class="block.data.temperature > 8 ? 'text-red-600 font-bold' : 'text-green-600'">
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 text-xs text-gray-500" x-text="new Date(block.timestamp).toLocaleTimeString()"></td>
+                                    <td class="px-4 py-2">
+                                        <span class="text-green-600">● Verified</span>
+                                    </td>
+                                </tr>
+                            </template>
 
-        <!-- Search/Trace Bar -->
-        <div class="mb-6">
-            <div class="relative">
-                <input
-                    type="text"
-                    placeholder="Search by Kit ID..."
-                    x-model="searchTerm"
-                    class="w-full p-4 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent"
-                />
-                <i data-lucide="search" class="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"></i>
-            </div>
-        </div>
-
-
-        <!-- Traceability Table -->
-        <div class="bg-white rounded-xl shadow overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 class="text-lg font-medium text-deep-navy">Supply Chain Records</h3>
-                <span class="text-sm text-gray-500" x-text="filteredLedger.length + ' records'"></span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kit ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temperature</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <template x-for="block in filteredLedger" :key="block.hash">
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-2 font-mono text-sm" x-text="block.data.kitID"></td>
-                                <td class="px-4 py-2" x-text="block.data.type"></td>
-                                <td class="px-4 py-2" x-text="block.data.location"></td>
-                                <td class="px-4 py-2">
-                                    <span x-text="block.data.temperature + '°C'"
-                                          :class="block.data.temperature > 8 ? 'text-red-600 font-bold' : 'text-green-600'">
-                                    </span>
-                                </td>
-                                <td class="px-4 py-2 text-xs text-gray-500" x-text="new Date(block.timestamp).toLocaleTimeString()"></td>
-                                <td class="px-4 py-2">
-                                    <span class="text-green-600">● Verified</span>
+                            <!-- Empty state -->
+                            <tr x-show="filteredLedger.length === 0">
+                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <span x-text="searchTerm ? 'No kits match your search.' : 'Loading ledger data...'"></span>
                                 </td>
                             </tr>
-                        </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assets View -->
+        <div x-show="activeView === 'assets'" x-transition>
+            <div class="mb-6">
+                <div class="relative">
+                    <input
+                        type="text"
+                        placeholder="Search assets..."
+                        x-model="assetSearchTerm"
+                        class="w-full p-4 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent"
+                    />
+                    <i data-lucide="search" class="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"></i>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <template x-for="block in filteredAssets" :key="block.hash">
+                    <div class="bg-white rounded-xl shadow p-6 border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer" @click="showDetailedCard(block)">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-lg text-deep-navy" x-text="block.data.kitID"></h3>
+                                <p class="text-gray-600" x-text="block.data.type"></p>
+                            </div>
+                            <span :class="block.data.temperature > 8 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'" 
+                                  class="px-2 py-1 rounded-full text-xs font-semibold" 
+                                  x-text="block.data.temperature > 8 ? 'HIGH RISK' : 'SAFE'"></span>
+                        </div>
                         
-                        <!-- Empty state -->
-                        <tr x-show="filteredLedger.length === 0">
-                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
-                                <span x-text="searchTerm ? 'No kits match your search.' : 'Loading ledger data...'"></span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                        <div class="mt-4">
+                            <div class="flex items-center text-sm text-gray-500 mb-2">
+                                <i data-lucide="map-pin" class="h-4 w-4 mr-1"></i>
+                                <span x-text="block.data.location"></span>
+                            </div>
+                            
+                            <div class="flex items-center text-sm text-gray-500 mb-2">
+                                <i data-lucide="thermometer" class="h-4 w-4 mr-1"></i>
+                                <span x-text="block.data.temperature + '°C'"></span>
+                            </div>
+                            
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i data-lucide="clock" class="h-4 w-4 mr-1"></i>
+                                <span x-text="'Days in Transit: ' + Math.floor((new Date() - new Date(block.timestamp)) / (1000 * 60 * 60 * 24))"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Added:</span>
+                                <span x-text="new Date(block.timestamp).toLocaleDateString()"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                <div x-show="filteredAssets.length === 0" class="col-span-full text-center py-12">
+                    <i data-lucide="package-open" class="h-12 w-12 mx-auto text-gray-300"></i>
+                    <p class="mt-4 text-gray-500" x-text="assetSearchTerm ? 'No assets match your search.' : 'No assets available.'"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Locations View -->
+        <div x-show="activeView === 'locations'" x-transition>
+            <div class="mb-6">
+                <div class="relative">
+                    <input
+                        type="text"
+                        placeholder="Search locations..."
+                        x-model="locationSearchTerm"
+                        class="w-full p-4 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent"
+                    />
+                    <i data-lucide="search" class="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"></i>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="location in uniqueLocations" :key="location.name">
+                    <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-lg text-deep-navy" x-text="location.name"></h3>
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold" 
+                                  x-text="location.count + ' kits'"></span>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="flex items-center mb-2">
+                                <i data-lucide="circle" 
+                                   :class="location.health === 'Good' ? 'text-green-500' : location.health === 'Warning' ? 'text-yellow-500' : 'text-red-500'"
+                                   class="h-4 w-4 mr-2"></i>
+                                <span class="text-sm" x-text="'Node Health: ' + location.health"></span>
+                            </div>
+                            
+                            <div class="flex items-center text-sm text-gray-500 mb-2">
+                                <i data-lucide="thermometer" class="h-4 w-4 mr-1"></i>
+                                <span x-text="'Avg Temp: ' + location.avgTemp + '°C'"></span>
+                            </div>
+                            
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i data-lucide="activity" class="h-4 w-4 mr-1"></i>
+                                <span x-text="'Last Update: ' + location.lastUpdate"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex justify-between">
+                                <button class="text-icrc-red hover:text-red-700 text-sm font-medium flex items-center">
+                                    <i data-lucide="map" class="h-4 w-4 mr-1"></i>
+                                    View Map
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 text-sm font-medium flex items-center">
+                                    <i data-lucide="list" class="h-4 w-4 mr-1"></i>
+                                    View Kits
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                <div x-show="uniqueLocations.length === 0" class="col-span-full text-center py-12">
+                    <i data-lucide="map-pin" class="h-12 w-12 mx-auto text-gray-300"></i>
+                    <p class="mt-4 text-gray-500" x-text="locationSearchTerm ? 'No locations match your search.' : 'No locations available.'"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity View -->
+        <div x-show="activeView === 'activity'" x-transition>
+            <div class="mb-6">
+                <div class="relative">
+                    <input
+                        type="text"
+                        placeholder="Filter activities..."
+                        x-model="activitySearchTerm"
+                        class="w-full p-4 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent"
+                    />
+                    <i data-lucide="search" class="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"></i>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-deep-navy">Blockchain Activity Log</h3>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    <template x-for="block in filteredActivities" :key="block.hash">
+                        <div class="p-6 hover:bg-gray-50">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <div class="h-10 w-10 rounded-full bg-icrc-red flex items-center justify-center">
+                                        <i data-lucide="package" class="h-5 w-5 text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-sm font-medium text-deep-navy" x-text="block.data.kitID + ' - ' + block.data.type"></h4>
+                                        <p class="text-sm text-gray-500" x-text="new Date(block.timestamp).toLocaleString()"></p>
+                                    </div>
+                                    <div class="mt-2">
+                                        <p class="text-sm text-gray-600" x-text="'Location: ' + block.data.location"></p>
+                                        <p class="text-sm text-gray-600" x-text="'Temperature: ' + block.data.temperature + '°C'"></p>
+                                    </div>
+                                    <div class="mt-2 flex items-center">
+                                        <span :class="block.data.temperature > 8 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'" 
+                                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                                              x-text="block.data.temperature > 8 ? 'High Risk' : 'Safe'"></span>
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            Verified
+                                        </span>
+                                    </div>
+                                    
+                                    <!-- Show any humanitarian alerts if available -->
+                                    <template x-if="block.data.intelligence && block.data.intelligence.relief_reports && block.data.intelligence.relief_reports.reports.length > 0">
+                                        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                                            <div class="flex items-center">
+                                                <i data-lucide="alert-triangle" class="h-4 w-4 text-yellow-600 mr-2"></i>
+                                                <span class="text-sm font-medium text-yellow-800">Humanitarian Alert</span>
+                                            </div>
+                                            <p class="mt-1 text-sm text-yellow-700" x-text="block.data.intelligence.relief_reports.reports[0].title"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <div x-show="filteredActivities.length === 0" class="p-12 text-center">
+                        <i data-lucide="activity" class="h-12 w-12 mx-auto text-gray-300"></i>
+                        <p class="mt-4 text-gray-500" x-text="activitySearchTerm ? 'No activities match your filter.' : 'No activity records available.'"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div x-show="activeView === 'settings'" x-transition>
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="text-lg font-medium text-deep-navy mb-6">Node Configuration</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Port</label>
+                        <input type="text" 
+                               x-model="nodeConfig.port" 
+                               class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Node Name</label>
+                        <input type="text" 
+                               x-model="nodeConfig.name" 
+                               class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent">
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Manage Peers</label>
+                    <div class="flex">
+                        <input type="text" 
+                               x-model="newPeerUrl" 
+                               placeholder="Enter peer URL (e.g., http://localhost:3001)"
+                               class="flex-1 p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent">
+                        <button @click="addPeer()" 
+                                class="bg-icrc-red hover:bg-red-700 text-white px-4 py-2 rounded-r-md">
+                            Add Peer
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">Connected Peers</h4>
+                        <ul class="space-y-2">
+                            <template x-for="(peer, index) in nodeConfig.peers" :key="index">
+                                <li class="flex justify-between items-center bg-gray-50 p-2 rounded-md">
+                                    <span x-text="peer"></span>
+                                    <button @click="removePeer(index)" class="text-red-600 hover:text-red-800">
+                                        <i data-lucide="x" class="h-4 w-4"></i>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-6" x-show="currentUser.role === 'admin'">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Export Private Keys</label>
+                    <div class="flex items-center">
+                        <input type="checkbox" x-model="exportKeysEnabled" class="h-4 w-4 text-icrc-red focus:ring-icrc-red border-gray-300 rounded">
+                        <span class="ml-2 text-sm text-gray-600">Enable private key export</span>
+                    </div>
+                    <button x-show="exportKeysEnabled" 
+                            @click="exportKeys()" 
+                            class="mt-2 bg-icrc-red hover:bg-red-700 text-white px-4 py-2 rounded-md">
+                        Export Keys
+                    </button>
+                </div>
+                
+                <div class="mt-6">
+                    <button @click="saveNodeConfig()" 
+                            class="bg-icrc-red hover:bg-red-700 text-white px-4 py-2 rounded-md">
+                        Save Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- THE SUPPLIER MODULE (Adding Kits) -->
+        <div x-show="currentUser.role === 'supplier'" class="p-6 bg-blue-50 border-l-4 border-blue-500">
+            <h3 class="font-bold text-lg text-deep-navy">Supplier Module: New Production</h3>
+            <p class="mb-4">Manufacture and register new medical kits to the blockchain.</p>
+            <button @click="showAddKitModal = true" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded-md">
+                Register New Shipment
+            </button>
+        </div>
+
+        <!-- THE TRANSPORTER MODULE (Moving Kits) -->
+        <div x-show="currentUser.role === 'transporter'" class="p-6 bg-yellow-50 border-l-4 border-yellow-500">
+            <h3 class="font-bold text-lg text-deep-navy">Logistics Module: Transit Update</h3>
+            <p class="mb-4">Update location and transit status of existing shipments.</p>
+            <div class="mt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kit ID</label>
+                        <input type="text" 
+                               x-model="transitUpdate.kitID" 
+                               placeholder="Enter Kit ID"
+                               class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">New Location</label>
+                        <input type="text" 
+                               x-model="transitUpdate.newLocation" 
+                               placeholder="Current Location"
+                               class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Temperature (°C)</label>
+                    <input type="number" 
+                           x-model="transitUpdate.temperature" 
+                           placeholder="Current temperature"
+                           class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent">
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea 
+                           x-model="transitUpdate.notes" 
+                           placeholder="Additional notes about transit"
+                           class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-icrc-red focus:border-transparent"></textarea>
+                </div>
+                <button @click="updateLocation()" 
+                        class="mt-4 bg-yellow-600 text-white px-4 py-2 rounded-md">
+                    Update Transit Status
+                </button>
             </div>
         </div>
     </main>
 
+    <!-- Detailed Card Slide-over -->
+    <div x-show="detailedCardOpen" 
+         @click.away="detailedCardOpen = false"
+         class="fixed inset-0 overflow-hidden z-50 pointer-events-none" 
+         aria-labelledby="slide-over-title" 
+         role="dialog" 
+         aria-modal="true">
+        <div class="absolute inset-0 overflow-hidden">
+            <div x-show="detailedCardOpen" 
+                 x-transition:enter="ease-in-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in-out duration-300"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity pointer-events-auto"></div>
+
+            <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+                <div x-show="detailedCardOpen" 
+                     x-transition:enter="transform transition ease-in-out duration-300"
+                     x-transition:enter-start="translate-x-full"
+                     x-transition:enter-end="translate-x-0"
+                     x-transition:leave="transform transition ease-in-out duration-300"
+                     x-transition:leave-start="translate-x-0"
+                     x-transition:leave-end="translate-x-full"
+                     class="relative w-screen max-w-md pointer-events-auto">
+                    <div class="h-full flex flex-col bg-white shadow-xl">
+                        <div class="flex-1 overflow-y-auto">
+                            <div class="bg-icrc-red px-4 py-6 sm:px-6">
+                                <div class="flex items-start justify-between">
+                                    <h2 class="text-lg font-medium text-white" id="slide-over-title">
+                                        Digital Passport - <span x-text="selectedItem.data.kitID"></span>
+                                    </h2>
+                                    <div class="ml-3 h-7 flex items-center">
+                                        <button @click="detailedCardOpen = false" 
+                                                class="bg-icrc-red rounded-md text-white hover:text-white focus:outline-none">
+                                            <i data-lucide="x" class="h-6 w-6"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="mt-1 text-sm text-red-100">Complete supply chain record</p>
+                            </div>
+                            
+                            <div class="relative mt-6 flex-1 px-4 sm:px-6">
+                                <!-- Summary Section -->
+                                <div class="mb-8">
+                                    <h3 class="text-md font-medium text-gray-900 mb-4">Kit Summary</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <p class="text-sm text-gray-500">Type</p>
+                                            <p class="font-medium" x-text="selectedItem.data.type"></p>
+                                        </div>
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <p class="text-sm text-gray-500">Origin</p>
+                                            <p class="font-medium" x-text="selectedItem.data.origin"></p>
+                                        </div>
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <p class="text-sm text-gray-500">Current Location</p>
+                                            <p class="font-medium" x-text="selectedItem.data.location"></p>
+                                        </div>
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <p class="text-sm text-gray-500">Temperature</p>
+                                            <p :class="selectedItem.data.temperature > 8 ? 'text-red-600 font-bold' : 'text-green-600'" 
+                                               class="font-medium" 
+                                               x-text="selectedItem.data.temperature + '°C'"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Intelligence Data Section -->
+                                <div class="mb-8" x-show="selectedItem.data.intelligence">
+                                    <h3 class="text-md font-medium text-gray-900 mb-4">Intelligence Data</h3>
+                                    
+                                    <!-- Temperature Data -->
+                                    <div class="mb-6" x-show="selectedItem.data.intelligence.temperature_data">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Ambient Temperature</h4>
+                                        <div class="bg-blue-50 p-4 rounded-lg">
+                                            <div class="flex justify-between">
+                                                <span x-text="selectedItem.data.intelligence.temperature_data.temperature + '°C'"></span>
+                                                <span :class="selectedItem.data.intelligence.temperature_data.riskLevel === 'High Risk' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'" 
+                                                      class="px-2 py-1 rounded-full text-xs font-semibold" 
+                                                      x-text="selectedItem.data.intelligence.temperature_data.riskLevel"></span>
+                                            </div>
+                                            <p class="mt-2 text-sm text-gray-600" x-text="selectedItem.data.intelligence.temperature_data.message"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Flight Data -->
+                                    <div class="mb-6" x-show="selectedItem.data.intelligence.flight_data && selectedItem.data.intelligence.flight_data.flight_data">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Flight Information</h4>
+                                        <div class="bg-purple-50 p-4 rounded-lg">
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p class="text-xs text-gray-500">Flight Number</p>
+                                                    <p class="font-medium" x-text="selectedItem.data.intelligence.flight_data.flight_data.flight_number"></p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs text-gray-500">Airline</p>
+                                                    <p class="font-medium" x-text="selectedItem.data.intelligence.flight_data.flight_data.airline"></p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs text-gray-500">Status</p>
+                                                    <p class="font-medium" x-text="selectedItem.data.intelligence.flight_data.flight_data.status"></p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs text-gray-500">Altitude</p>
+                                                    <p class="font-medium" x-text="Math.round(selectedItem.data.intelligence.flight_data.flight_data.altitude) + 'm'"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Humanitarian Reports -->
+                                    <div x-show="selectedItem.data.intelligence.relief_reports && selectedItem.data.intelligence.relief_reports.reports">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Humanitarian Reports</h4>
+                                        <template x-for="report in selectedItem.data.intelligence.relief_reports.reports" :key="report.title">
+                                            <div class="bg-yellow-50 p-4 rounded-lg mb-3">
+                                                <div class="flex justify-between">
+                                                    <h5 class="font-medium" x-text="report.title"></h5>
+                                                    <span :class="report.severity === 'High' ? 'bg-red-100 text-red-800' : report.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'" 
+                                                          class="px-2 py-1 rounded-full text-xs font-semibold" 
+                                                          x-text="report.severity"></span>
+                                                </div>
+                                                <p class="mt-2 text-sm text-gray-600" x-text="report.description"></p>
+                                                <p class="mt-2 text-xs text-gray-500" x-text="new Date(report.date).toLocaleDateString()"></p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                
+                                <!-- Blockchain Details -->
+                                <div>
+                                    <h3 class="text-md font-medium text-gray-900 mb-4">Blockchain Details</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Block Index</p>
+                                            <p class="font-medium" x-text="selectedItem.index"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Timestamp</p>
+                                            <p class="font-medium" x-text="new Date(selectedItem.timestamp).toLocaleString()"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Block Hash</p>
+                                            <p class="font-mono text-xs break-all" x-text="selectedItem.hash"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Previous Hash</p>
+                                            <p class="font-mono text-xs break-all" x-text="selectedItem.previousHash"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Validator</p>
+                                            <p class="font-medium" x-text="selectedItem.validator || 'ICRC-HQ'"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
-        
-        // This is the logic container
-        function dashboardApp() {
+
+        // This is the main application logic
+        function app() {
             return {
+                activeView: 'dashboard',
+                sidebarOpen: true,
                 ledger: [],
-                stats: { 
-                    total: 0, 
+                stats: {
+                    total: 0,
                     status: 'Offline', // Start as offline
-                    auditStatus: 'Secure' 
+                    auditStatus: 'Secure'
                 },
                 isVerifying: false,
                 searchTerm: '',
-
-                // Computed property for filtered ledger
+                assetSearchTerm: '',
+                locationSearchTerm: '',
+                activitySearchTerm: '',
+                detailedCardOpen: false,
+                selectedItem: {},
+                currentUser: {
+                    name: 'ICRC Admin',
+                    role: 'Administrator',
+                    initials: 'HQ'
+                },
+                
+                // Transit update data for transporters
+                transitUpdate: {
+                    kitID: '',
+                    newLocation: '',
+                    temperature: '',
+                    notes: ''
+                },
+                
+                // Node configuration
+                nodeConfig: {
+                    port: '3000',
+                    name: 'ICRC-NODE-01',
+                    peers: []
+                },
+                newPeerUrl: '',
+                exportKeysEnabled: false,
+                
+                // Computed properties
                 get filteredLedger() {
                     if (!this.searchTerm) return this.ledger;
-                    return this.ledger.filter(item => 
+                    return this.ledger.filter(item =>
                         item.data.kitID.toLowerCase().includes(this.searchTerm.toLowerCase())
                     );
                 },
-
-                // 1. Check if the server is actually alive
+                
+                get filteredAssets() {
+                    if (!this.assetSearchTerm) return this.ledger;
+                    return this.ledger.filter(item =>
+                        item.data.kitID.toLowerCase().includes(this.assetSearchTerm.toLowerCase()) ||
+                        item.data.type.toLowerCase().includes(this.assetSearchTerm.toLowerCase())
+                    );
+                },
+                
+                get uniqueLocations() {
+                    const locations = {};
+                    
+                    this.ledger.forEach(item => {
+                        const loc = item.data.location;
+                        if (!locations[loc]) {
+                            locations[loc] = {
+                                name: loc,
+                                count: 0,
+                                avgTemp: 0,
+                                totalTemp: 0,
+                                health: 'Good', // Default health
+                                lastUpdate: new Date(item.timestamp).toLocaleDateString()
+                            };
+                        }
+                        
+                        locations[loc].count++;
+                        locations[loc].totalTemp += item.data.temperature;
+                        
+                        // Update last update if this is more recent
+                        if (new Date(item.timestamp) > new Date(locations[loc].lastUpdate)) {
+                            locations[loc].lastUpdate = new Date(item.timestamp).toLocaleDateString();
+                        }
+                    });
+                    
+                    // Calculate average temperatures and determine health
+                    Object.keys(locations).forEach(loc => {
+                        locations[loc].avgTemp = (locations[loc].totalTemp / locations[loc].count).toFixed(2);
+                        
+                        // Determine health based on average temperature
+                        if (parseFloat(locations[loc].avgTemp) > 8) {
+                            locations[loc].health = 'Critical';
+                        } else if (parseFloat(locations[loc].avgTemp) > 6) {
+                            locations[loc].health = 'Warning';
+                        } else {
+                            locations[loc].health = 'Good';
+                        }
+                    });
+                    
+                    // Filter based on search term
+                    if (this.locationSearchTerm) {
+                        const filtered = {};
+                        Object.keys(locations).forEach(loc => {
+                            if (loc.toLowerCase().includes(this.locationSearchTerm.toLowerCase())) {
+                                filtered[loc] = locations[loc];
+                            }
+                        });
+                        return Object.values(filtered);
+                    }
+                    
+                    return Object.values(locations);
+                },
+                
+                get filteredActivities() {
+                    if (!this.activitySearchTerm) return this.ledger;
+                    return this.ledger.filter(item =>
+                        item.data.kitID.toLowerCase().includes(this.activitySearchTerm.toLowerCase()) ||
+                        item.data.type.toLowerCase().includes(this.activitySearchTerm.toLowerCase()) ||
+                        item.data.location.toLowerCase().includes(this.activitySearchTerm.toLowerCase())
+                    ).reverse(); // Reverse to show newest first
+                },
+                
+                // Methods
+                setActiveView(view) {
+                    this.activeView = view;
+                    this.sidebarOpen = window.innerWidth >= 768; // Close sidebar on mobile after selection
+                },
+                
+                getViewTitle() {
+                    switch(this.activeView) {
+                        case 'dashboard': return 'Global Supply Chain Ledger';
+                        case 'assets': return 'Asset Inventory';
+                        case 'locations': return 'Location Overview';
+                        case 'activity': return 'Activity Log';
+                        case 'settings': return 'Node Configuration';
+                        default: return 'Global Supply Chain Ledger';
+                    }
+                },
+                
                 async checkHealth() {
                     try {
                         const res = await fetch('/health');
@@ -265,26 +918,25 @@
                         this.stats.status = 'Offline';
                     }
                 },
-
-                // 2. Fetch the actual medical kits
+                
                 async fetchLedger() {
                     try {
                         const res = await fetch('/ledger');
                         const data = await res.json();
-                        
+
                         // DATA MAPPING: This is where we fix the 'undefined' issue
                         // We check if data is a direct array, or inside an object property
                         const cleanData = Array.isArray(data.blocks) ? data.blocks : (data.chain || data.ledger || []);
-                        
+
                         this.ledger = cleanData;
                         this.stats.total = this.ledger.length;
-                        
+
                         console.log("📊 Ledger sync successful. Total kits:", this.stats.total);
                     } catch (err) {
                         console.error("❌ Failed to sync ledger:", err);
                     }
                 },
-
+                
                 async auditLedger() {
                     console.log("🔍 Audit Button Clicked");
                     this.isVerifying = true;
@@ -298,17 +950,111 @@
                         this.isVerifying = false; // This UNSTUCKS the button
                     }
                 },
+                
+                showDetailedCard(item) {
+                    this.selectedItem = item;
+                    this.detailedCardOpen = true;
+                },
+                
+                addPeer() {
+                    if (this.newPeerUrl && !this.nodeConfig.peers.includes(this.newPeerUrl)) {
+                        this.nodeConfig.peers.push(this.newPeerUrl);
+                        this.newPeerUrl = '';
+                    }
+                },
+                
+                removePeer(index) {
+                    this.nodeConfig.peers.splice(index, 1);
+                },
+                
+                exportKeys() {
+                    alert('Private keys exported successfully!');
+                    // In a real implementation, this would download the keys
+                },
+                
+                saveNodeConfig() {
+                    alert('Configuration saved successfully!');
+                    // In a real implementation, this would save to the server
+                },
+
+                async updateLocation() {
+                    if (!this.transitUpdate.kitID || !this.transitUpdate.newLocation) {
+                        alert('Please enter both Kit ID and New Location');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/update-location', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                kitID: this.transitUpdate.kitID,
+                                newLocation: this.transitUpdate.newLocation,
+                                temperature: this.transitUpdate.temperature || undefined,
+                                notes: this.transitUpdate.notes
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            alert('Location updated successfully!');
+                            // Clear the form
+                            this.transitUpdate = {
+                                kitID: '',
+                                newLocation: '',
+                                temperature: '',
+                                notes: ''
+                            };
+                            // Refresh the ledger
+                            await this.fetchLedger();
+                        } else {
+                            alert(data.message || 'Failed to update location');
+                        }
+                    } catch (error) {
+                        alert('Network error. Please try again.');
+                    }
+                },
+
+                logout() {
+                    fetch('/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(response => {
+                        if (response.ok) {
+                            window.location.href = '/login';
+                        } else {
+                            window.location.href = '/login'; // Redirect anyway
+                        }
+                    }).catch(error => {
+                        window.location.href = '/login'; // Redirect anyway
+                    });
+                },
 
                 async init() {
                     console.log("🚀 Alpine initialized");
                     await this.checkHealth();
                     await this.fetchLedger();
-                    
+
                     // Auto-refresh every 5 seconds
                     setInterval(async () => {
                         await this.checkHealth();
                         await this.fetchLedger();
                     }, 5000);
+
+                    // Initialize sidebar state based on screen size
+                    this.sidebarOpen = window.innerWidth >= 768;
+
+                    // Handle window resize for responsive sidebar
+                    window.addEventListener('resize', () => {
+                        if (window.innerWidth >= 768) {
+                            this.sidebarOpen = true;
+                        }
+                    });
                 }
             }
         }
